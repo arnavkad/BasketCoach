@@ -7,17 +7,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, TrendingUp, RefreshCw, Activity } from "lucide-react"
 import type { MonthStats, StatsData } from "@/types/stats"
 import { getStatsData } from "@/app/actions"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function StatsPage() {
+  const { user, isLoading: authLoading } = useAuth()
   const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 1))
   const [statsData, setStatsData] = useState<StatsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const fetchStats = async () => {
+    if (!user) {
+      setStatsData(null)
+      setLoading(false)
+      return
+    }
+
     try {
       setLoading(true)
+      setError(null)
+      console.log("Fetching stats data...")
       const data = await getStatsData()
+      console.log("Received stats data:", data)
       setStatsData(data)
     } catch (err) {
       console.error("Failed to fetch stats data:", err)
@@ -28,8 +39,10 @@ export default function StatsPage() {
   }
 
   useEffect(() => {
-    fetchStats()
-  }, [])
+    if (!authLoading) {
+      fetchStats()
+    }
+  }, [user, authLoading])
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-US", { month: "long", year: "numeric" })
@@ -56,9 +69,9 @@ export default function StatsPage() {
     accuracy: 0,
     shotsForSession: 0,
     totalShots: 0,
-    accuracyGraph: [],
-    shotsForSessionGraph: [],
-    totalShotsGraph: [],
+    accuracyGraph: Array(7).fill(0),
+    shotsForSessionGraph: Array(7).fill(0),
+    totalShotsGraph: Array(7).fill(0),
     recentSessions: [],
   }
 
@@ -66,9 +79,10 @@ export default function StatsPage() {
   const displayedShotsForSession = monthStats.shotsForSession
   const displayedTotalShots = monthStats.totalShots
 
-  const accuracyGraphData = monthStats.accuracyGraph
-  const shotsForSessionGraphData = monthStats.shotsForSessionGraph
-  const totalShotsGraphData = monthStats.totalShotsGraph
+  const accuracyGraphData = monthStats.accuracyGraph.length > 0 ? monthStats.accuracyGraph : Array(7).fill(0)
+  const shotsForSessionGraphData =
+    monthStats.shotsForSessionGraph.length > 0 ? monthStats.shotsForSessionGraph : Array(7).fill(0)
+  const totalShotsGraphData = monthStats.totalShotsGraph.length > 0 ? monthStats.totalShotsGraph : Array(7).fill(0)
 
   const prevMonthDate = new Date(currentDate)
   prevMonthDate.setMonth(prevMonthDate.getMonth() - 1)
@@ -79,12 +93,28 @@ export default function StatsPage() {
   const shotsForSessionDiff = prevMonthStats ? displayedShotsForSession - prevMonthStats.shotsForSession : null
   const totalShotsDiff = prevMonthStats ? displayedTotalShots - prevMonthStats.totalShots : null
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-white">
         <div className="text-center space-y-4">
           <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="text-slate-600 font-medium">Loading statistics...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-white">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+            <Activity className="h-8 w-8 text-red-500" />
+          </div>
+          <p className="text-red-600 font-medium">Please log in to view your statistics.</p>
+          <Link href="/login">
+            <Button className="bg-orange-500 hover:bg-orange-600 text-white">Go to Login</Button>
+          </Link>
         </div>
       </div>
     )
@@ -162,7 +192,7 @@ export default function StatsPage() {
               diff: accuracyDiff,
               graphData: accuracyGraphData,
               color: "orange",
-              maxValue: 100,
+              maxValue: Math.max(...accuracyGraphData, 100),
             },
             {
               title: "Shots per Session",
@@ -212,7 +242,7 @@ export default function StatsPage() {
                       key={idx}
                       className={`flex-1 rounded-t transition-all duration-300 bg-gradient-to-t from-orange-500 to-orange-400`}
                       style={{
-                        height: `${(value / metric.maxValue) * 64}px`,
+                        height: `${Math.max((value / metric.maxValue) * 64, 2)}px`,
                         opacity: 0.6 + (idx / (metric.graphData.length - 1)) * 0.4,
                       }}
                     ></div>
@@ -271,6 +301,7 @@ export default function StatsPage() {
                     <Calendar className="h-8 w-8 text-slate-400" />
                   </div>
                   <p className="text-slate-500 font-medium">No session data available for this month</p>
+                  <p className="text-slate-400 text-sm mt-2">Your AI backend will populate this data automatically</p>
                 </div>
               )}
             </div>

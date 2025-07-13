@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Award, Calendar, Edit, Target, Trophy, MoreHorizontal, X, User, TrendingUp } from "lucide-react"
 import type { MonthStats, SessionData, StatsData } from "@/types/stats"
 import { getStatsData } from "@/app/actions"
-import { useAuth } from "@/contexts/auth-context" // Import useAuth
+import { useAuth } from "@/contexts/auth-context"
 
 export default function ProfilePage() {
   const [profileImage, setProfileImage] = useState<string | null>(null)
@@ -17,13 +17,21 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const { user, isLoading: authLoading } = useAuth() // Get user and authLoading from useAuth
+  const { user, isLoading: authLoading } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const fetchStats = async () => {
+      if (!user) {
+        setStatsData(null)
+        setLoading(false)
+        setError("Please log in to view your profile.")
+        return
+      }
+
       try {
         setLoading(true)
+        setError(null)
         const data = await getStatsData()
         setStatsData(data)
       } catch (err) {
@@ -33,16 +41,11 @@ export default function ProfilePage() {
         setLoading(false)
       }
     }
-    // Only fetch stats if authLoading is false and user is available
-    if (!authLoading && user) {
+
+    if (!authLoading) {
       fetchStats()
-    } else if (!authLoading && !user) {
-      // If not logged in, set loading to false and clear stats
-      setLoading(false)
-      setStatsData(null)
-      setError("Please log in to view your profile.")
     }
-  }, [user, authLoading]) // Re-run when user or authLoading changes
+  }, [user, authLoading])
 
   const aggregatedTotalSessions = statsData
     ? Object.values(statsData.monthlyStats).reduce((sum, month) => sum + month.recentSessions.length, 0)
@@ -52,10 +55,11 @@ export default function ProfilePage() {
     ? Object.values(statsData.monthlyStats).reduce((sum, month) => sum + month.totalShots, 0)
     : 0
 
-  const aggregatedAvgAccuracy = statsData
-    ? Object.values(statsData.monthlyStats).reduce((sum, month) => sum + month.accuracy, 0) /
-      Object.keys(statsData.monthlyStats).length
-    : 0
+  const aggregatedAvgAccuracy =
+    statsData && Object.keys(statsData.monthlyStats).length > 0
+      ? Object.values(statsData.monthlyStats).reduce((sum, month) => sum + month.accuracy, 0) /
+        Object.keys(statsData.monthlyStats).length
+      : 0
 
   // Determine achievement unlock status based on aggregated stats
   const hasHotHand = statsData
@@ -99,7 +103,7 @@ export default function ProfilePage() {
   }
 
   const calculateDailyGoals = () => {
-    if (!statsData || Object.keys(statsData.monthlyStats).length === 0) return [] // Return empty if no stats data
+    if (!statsData || Object.keys(statsData.monthlyStats).length === 0) return []
 
     const goals = []
     const today = new Date()
@@ -117,7 +121,6 @@ export default function ProfilePage() {
 
     const currentDayData: SessionData = latestSession ||
       monthStats?.recentSessions[0] || {
-        // Fallback to first session if no today's session
         accuracy: 0,
         shots: 0,
         consecutiveShots: 0,
@@ -191,7 +194,6 @@ export default function ProfilePage() {
   const displayedAchievements = showAllAchievements ? achievements : achievements.slice(0, 3)
   const dailyGoals = calculateDailyGoals()
 
-  // Display loading state for both auth and data fetching
   if (authLoading || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-white">
@@ -203,7 +205,6 @@ export default function ProfilePage() {
     )
   }
 
-  // If not logged in after loading, show an error
   if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-white">
@@ -220,7 +221,6 @@ export default function ProfilePage() {
     )
   }
 
-  // Derive name and username from user email
   const userName = user.email
     ? user.email
         .split("@")[0]
@@ -373,23 +373,30 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {dailyGoals.map((goal, index) => (
-                  <div key={index} className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-slate-900">{goal.description}</span>
-                      <span className="text-sm text-slate-500 font-medium">
-                        {goal.current}/{goal.target}
-                      </span>
+                {dailyGoals.length > 0 ? (
+                  dailyGoals.map((goal, index) => (
+                    <div key={index} className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-slate-900">{goal.description}</span>
+                        <span className="text-sm text-slate-500 font-medium">
+                          {goal.current}/{goal.target}
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                        <div
+                          className="bg-gradient-to-r from-orange-500 to-orange-600 h-3 rounded-full transition-all duration-500 shadow-sm"
+                          style={{ width: `${Math.min(goal.progress, 100)}%` }}
+                        ></div>
+                      </div>
+                      <div className="text-xs text-slate-500">{Math.min(goal.progress, 100).toFixed(0)}% complete</div>
                     </div>
-                    <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-orange-500 to-orange-600 h-3 rounded-full transition-all duration-500 shadow-sm"
-                        style={{ width: `${Math.min(goal.progress, 100)}%` }}
-                      ></div>
-                    </div>
-                    <div className="text-xs text-slate-500">{Math.min(goal.progress, 100).toFixed(0)}% complete</div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-slate-500">No data available yet</p>
+                    <p className="text-slate-400 text-sm mt-2">Goals will appear once you have training data</p>
                   </div>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>
@@ -441,6 +448,7 @@ export default function ProfilePage() {
                     <Calendar className="h-8 w-8 text-orange-400" />
                   </div>
                   <p className="text-slate-500 font-medium">No recent session data available</p>
+                  <p className="text-slate-400 text-sm mt-2">Your AI backend will populate this data automatically</p>
                 </div>
               )}
             </div>
