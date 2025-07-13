@@ -31,8 +31,8 @@ export default function HowItWorksPage() {
               <iframe
                 width="100%"
                 height="100%"
-                src="https://www.youtube.com/embed/WuT95ks1Q_M"
-                title="SmartShot Basketball Analysis Demo"
+                src="https://www.youtube.com/embed/Jtmd3Nvehws"
+                title="SmartShot Basketball Training Demo"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
