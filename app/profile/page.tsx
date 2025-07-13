@@ -9,7 +9,6 @@ import { ArrowLeft, Award, Calendar, Edit, Target, Trophy, MoreHorizontal, X, Us
 import { useDevStats } from "@/contexts/dev-stats-context"
 import type { MonthStats, SessionData, StatsData } from "@/types/stats"
 import { getStatsData } from "@/app/actions"
-import { useAuth } from "@/contexts/auth-context" // Import useAuth
 
 export default function ProfilePage() {
   const [profileImage, setProfileImage] = useState<string | null>(null)
@@ -18,12 +17,10 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const { user, isLoading: authLoading } = useAuth() // Get user and authLoading from useAuth
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
   // devAccuracy, devSessions, devShots are for the /analyze page's simulated feedback
   // and are not used for profile achievements anymore.
   const { devAccuracy, devSessions, devShots } = useDevStats()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -38,17 +35,10 @@ export default function ProfilePage() {
         setLoading(false)
       }
     }
-    // Only fetch stats if authLoading is false and user is available
-    if (!authLoading && user) {
-      fetchStats()
-    } else if (!authLoading && !user) {
-      // If not logged in, set loading to false and clear stats
-      setLoading(false)
-      setStatsData(null)
-      setError("Please log in to view your profile.")
-    }
-  }, [user, authLoading]) // Re-run when user or authLoading changes
+    fetchStats()
+  }, [])
 
+  // Calculate aggregated stats from fetched Supabase data
   const aggregatedTotalSessions = statsData
     ? Object.values(statsData.monthlyStats).reduce((sum, month) => sum + month.recentSessions.length, 0)
     : 0
@@ -196,8 +186,7 @@ export default function ProfilePage() {
   const displayedAchievements = showAllAchievements ? achievements : achievements.slice(0, 3)
   const dailyGoals = calculateDailyGoals()
 
-  // Display loading state for both auth and data fetching
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-white">
         <div className="text-center space-y-4">
@@ -208,37 +197,18 @@ export default function ProfilePage() {
     )
   }
 
-  // If not logged in after loading, show an error
-  if (!user) {
+  if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-white">
         <div className="text-center space-y-4 max-w-md">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
             <User className="h-8 w-8 text-red-500" />
           </div>
-          <p className="text-red-600 font-medium">{error || "You must be logged in to view your profile."}</p>
-          <Link href="/login">
-            <Button className="bg-orange-500 hover:bg-orange-600 text-white">Go to Login</Button>
-          </Link>
+          <p className="text-red-600 font-medium">{error}</p>
         </div>
       </div>
     )
   }
-
-  // Derive name and username from user email
-  const userName = user.email
-    ? user.email
-        .split("@")[0]
-        .replace(/[^a-zA-Z0-9]/g, " ")
-        .split(" ")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ")
-    : "Guest User"
-  const userHandle = user.email ? `@${user.email.split("@")[0]}` : "@guest"
-  const userInitials = user.email
-    ? user.email.charAt(0).toUpperCase() +
-      (user.email.split("@")[0].length > 1 ? user.email.split("@")[0].charAt(1).toUpperCase() : "")
-    : "GU"
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50/30">
@@ -270,7 +240,7 @@ export default function ProfilePage() {
                   />
                 ) : (
                   <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-xl">
-                    {userInitials}
+                    MJ
                   </div>
                 )}
                 <Button
@@ -292,8 +262,8 @@ export default function ProfilePage() {
 
               <div className="flex-1 space-y-6">
                 <div>
-                  <h1 className="text-3xl font-bold text-slate-900">{userName}</h1>
-                  <p className="text-slate-500 text-lg">{userHandle}</p>
+                  <h1 className="text-3xl font-bold text-slate-900">Michael Jordan</h1>
+                  <p className="text-slate-500 text-lg">@airjordan23</p>
                 </div>
 
                 <div className="grid grid-cols-3 gap-8">

@@ -18,7 +18,6 @@ export default function StatsPage() {
     try {
       setLoading(true)
       const data = await getStatsData()
-      console.log("Stats data received in client:", data)
       setStatsData(data)
     } catch (err) {
       console.error("Failed to fetch stats data:", err)
@@ -30,7 +29,6 @@ export default function StatsPage() {
 
   useEffect(() => {
     fetchStats()
-    console.log("Initial fetch triggered.")
   }, [])
 
   const formatDate = (date: Date) => {
@@ -54,7 +52,6 @@ export default function StatsPage() {
   }
 
   const currentMonthKey = getMonthKey(currentDate)
-  console.log("Current month key:", currentMonthKey)
   const monthStats: MonthStats = statsData?.monthlyStats[currentMonthKey] || {
     accuracy: 0,
     shotsForSession: 0,
@@ -64,7 +61,6 @@ export default function StatsPage() {
     totalShotsGraph: [],
     recentSessions: [],
   }
-  console.log("Month stats for current month:", monthStats)
 
   const displayedAccuracy = monthStats.accuracy
   const displayedShotsForSession = monthStats.shotsForSession
