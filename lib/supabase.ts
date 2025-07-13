@@ -4,7 +4,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 // 1. Grab NEXT_PUBLIC_ keys for client-side access (and server-side)
 //    These are the correct prefixes for variables needed on the client.
 // -----------------------------------------------------------------------------
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL 
+const supabaseUrl = NEXT_PUBLIC_SUPABASE_URL 
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY 
 
 // -----------------------------------------------------------------------------
