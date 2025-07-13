@@ -314,6 +314,25 @@ export default function AnalyzePage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Real-time Feedback */}
+            <Card className="border-0 shadow-lg">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Live Feedback</h3>
+                {feedback.length > 0 ? (
+                  <div className="space-y-3">
+                    {feedback.map((item, index) => (
+                      <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-2 h-2 rounded-full bg-orange-500 mt-2 flex-shrink-0"></div>
+                        <span className="text-gray-700">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">Start recording or import a video to see feedback</p>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Session Stats */}
             <Card className="border-0 shadow-lg">
               <CardContent className="p-6">
