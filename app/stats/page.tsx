@@ -4,9 +4,9 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, TrendingUp, RefreshCw, Activity } from "lucide-react" // Removed Brain icon
+import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, TrendingUp, RefreshCw, Activity } from "lucide-react"
 import type { MonthStats, StatsData } from "@/types/stats"
-import { getStatsData } from "@/app/actions" // Removed generateAndSaveMockData
+import { getStatsData } from "@/app/actions"
 
 export default function StatsPage() {
   const [currentDate, setCurrentDate] = useState(new Date(2025, 6, 1))
@@ -29,7 +29,6 @@ export default function StatsPage() {
 
   useEffect(() => {
     fetchStats()
-    console.log("Initial fetch triggered.")
   }, [])
 
   const formatDate = (date: Date) => {
@@ -53,7 +52,6 @@ export default function StatsPage() {
   }
 
   const currentMonthKey = getMonthKey(currentDate)
-  console.log("Current month key:", currentMonthKey)
   const monthStats: MonthStats = statsData?.monthlyStats[currentMonthKey] || {
     accuracy: 0,
     shotsForSession: 0,
@@ -63,7 +61,6 @@ export default function StatsPage() {
     totalShotsGraph: [],
     recentSessions: [],
   }
-  console.log("Month stats for current month:", monthStats)
 
   const displayedAccuracy = monthStats.accuracy
   const displayedShotsForSession = monthStats.shotsForSession
@@ -131,7 +128,6 @@ export default function StatsPage() {
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
-            {/* Removed Generate Mock Data Button */}
           </div>
         </div>
       </header>
