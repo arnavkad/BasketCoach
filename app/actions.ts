@@ -18,6 +18,9 @@ export async function getStatsData(): Promise<StatsData> {
     return { monthlyStats: {} }
   }
 
+  // Add this line:
+  console.log("getStatsData: Session found?", !!session, "User ID:", session?.user?.id)
+
   const { data, error } = await supabase.from("user_stats").select("stats_data").eq("user_id", session.user.id).single()
 
   if (error && error.code !== "PGRST116") {
