@@ -15,14 +15,17 @@ let supabase: SupabaseClient<any, any, any> | undefined // Use undefined initial
 
 // Check if the Supabase client has already been initialized
 if (!supabase) {
+  // Log to see if this block is entered (should be once per server/client context)
+  console.log("V0_DEBUG: Attempting to initialize Supabase client (singleton check).")
+
   if (supabaseUrl && supabaseAnonKey) {
     supabase = createClient(supabaseUrl, supabaseAnonKey)
+    // Log if real credentials are used
+    console.log("V0_DEBUG: Supabase client initialized with REAL credentials (singleton).")
   } else {
     // -----------------------------------------------------------------------------
     // 3. ⚠️  Dev / Preview fallback  ⚠️
     //    If no real keys are found, we export a *mock* Supabase client.
-    //    This prevents "Failed to fetch" errors in local/preview environments
-    //    while still allowing the UI to render and interact with a "fake" backend.
     // -----------------------------------------------------------------------------
     /* eslint-disable @typescript-eslint/no-explicit-any */
     function mock(): SupabaseClient<any, any, any> {
@@ -49,10 +52,11 @@ if (!supabase) {
       } as unknown as SupabaseClient<any, any, any>
     }
 
+    // This warning is the key indicator if env vars are missing in production
     console.warn(
-      "⚠️  Supabase environment variables are missing.\n" +
+      "V0_DEBUG: ⚠️  Supabase environment variables are missing.\n" +
         "For production, add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your Vercel project.\n" +
-        "A mock Supabase client is being used for local preview.",
+        "A mock Supabase client is being used for local preview/missing config.",
     )
 
     supabase = mock()
