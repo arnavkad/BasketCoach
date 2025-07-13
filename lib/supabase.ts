@@ -13,8 +13,8 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env
 // -----------------------------------------------------------------------------
 let supabase: SupabaseClient<any, any, any> | undefined // Use undefined initially
 
+// Check if the Supabase client has already been initialized
 if (!supabase) {
-  // Only create if it doesn't exist
   if (supabaseUrl && supabaseAnonKey) {
     supabase = createClient(supabaseUrl, supabaseAnonKey)
     console.log("Supabase client initialized with real credentials (singleton).")
