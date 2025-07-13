@@ -18,6 +18,7 @@ let supabase: SupabaseClient<any, any, any>
 
 if (supabaseUrl && supabaseAnonKey) {
   supabase = createClient(supabaseUrl, supabaseAnonKey)
+  console.log("Supabase client initialized with real credentials.") // Add this log
 } else {
   // -----------------------------------------------------------------------------
   // 3. ⚠️  Dev / Preview fallback  ⚠️
