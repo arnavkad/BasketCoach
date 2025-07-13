@@ -20,12 +20,22 @@ export async function getStatsData(): Promise<StatsData> {
     return { monthlyStats: {} }
   }
 
+  console.log("Fetching stats for user ID:", session.user.id)
+
   const { data, error } = await supabase.from("user_stats").select("stats_data").eq("user_id", session.user.id).single()
 
   if (error && error.code !== "PGRST116") {
     // PGRST116 means "No rows found"
     console.error("Error fetching stats data from Supabase:", error.message)
     throw new Error("Failed to load statistics from database.")
+  }
+
+  if (error) {
+    console.error("Supabase query error:", error.message)
+  } else if (!data) {
+    console.log("No stats data found for user:", session.user.id)
+  } else {
+    console.log("Fetched stats data:", data.stats_data)
   }
 
   // Revalidate the paths to ensure the latest data is shown on these pages
@@ -38,6 +48,8 @@ export async function getStatsData(): Promise<StatsData> {
     // Return an empty StatsData object if no data is found for the user
     return { monthlyStats: {} }
   }
+
+  console.log("Returning stats data:", data ? data.stats_data : { monthlyStats: {} })
 }
 
 /**
