@@ -2,10 +2,12 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { supabase } from "@/lib/supabase" // Import Supabase client
+import type { User } from "@supabase/supabase-js" // Import Supabase User type
 
 interface AuthContextType {
   isLoggedIn: boolean
   isLoading: boolean // Add isLoading state
+  user: User | null // Add user object
   login: () => void // These will be handled by Supabase internally
   logout: () => void
 }
@@ -15,6 +17,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isLoading, setIsLoading] = useState(true) // Initialize as true
+  const [user, setUser] = useState<User | null>(null) // Initialize user state
 
   useEffect(() => {
     const {
@@ -22,8 +25,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         setIsLoggedIn(true)
+        setUser(session.user) // Set the user object
       } else {
         setIsLoggedIn(false)
+        setUser(null) // Clear the user object
       }
       setIsLoading(false) // Set loading to false once auth state is determined
     })
@@ -49,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // onAuthStateChanged will handle setting isLoggedIn to false and isLoading to false
   }
 
-  return <AuthContext.Provider value={{ isLoggedIn, isLoading, login, logout }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ isLoggedIn, isLoading, user, login, logout }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
