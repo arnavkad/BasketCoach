@@ -4,8 +4,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 // 1. Grab NEXT_PUBLIC_ keys for client-side access (and server-side)
 //    These are the correct prefixes for variables needed on the client.
 // -----------------------------------------------------------------------------
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL 
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY 
 
 // -----------------------------------------------------------------------------
 // 2. Implement Singleton Pattern for Supabase Client
