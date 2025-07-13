@@ -15,6 +15,7 @@ let supabase: SupabaseClient<any, any, any> | undefined // Use undefined initial
 
 // Check if the Supabase client has already been initialized
 if (!supabase) {
+  console.log("Attempting to initialize Supabase client (singleton check).") // Added log
   if (supabaseUrl && supabaseAnonKey) {
     supabase = createClient(supabaseUrl, supabaseAnonKey)
     console.log("Supabase client initialized with real credentials (singleton).")

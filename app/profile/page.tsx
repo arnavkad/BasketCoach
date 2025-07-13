@@ -6,7 +6,6 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Award, Calendar, Edit, Target, Trophy, MoreHorizontal, X, User, TrendingUp } from "lucide-react"
-import { useDevStats } from "@/contexts/dev-stats-context"
 import type { MonthStats, SessionData, StatsData } from "@/types/stats"
 import { getStatsData } from "@/app/actions"
 import { useAuth } from "@/contexts/auth-context" // Import useAuth
@@ -20,10 +19,6 @@ export default function ProfilePage() {
 
   const { user, isLoading: authLoading } = useAuth() // Get user and authLoading from useAuth
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // devAccuracy, devSessions, devShots are for the /analyze page's simulated feedback
-  // and are not used for profile achievements anymore.
-  const { devAccuracy, devSessions, devShots } = useDevStats()
 
   useEffect(() => {
     const fetchStats = async () => {

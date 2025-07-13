@@ -18,7 +18,6 @@ export default function StatsPage() {
     try {
       setLoading(true)
       const data = await getStatsData()
-      console.log("Stats data received in client:", data)
       setStatsData(data)
     } catch (err) {
       console.error("Failed to fetch stats data:", err)
