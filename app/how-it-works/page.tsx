@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, ArrowRight, Camera, Smartphone, TrendingUp, Play } from "lucide-react"
+import { ArrowLeft, ArrowRight, Camera, Smartphone, TrendingUp } from "lucide-react"
 
 export default function HowItWorksPage() {
   return (
@@ -28,17 +28,16 @@ export default function HowItWorksPage() {
         <section className="px-6 py-16 bg-white">
           <div className="max-w-4xl mx-auto">
             <div className="aspect-video bg-slate-100 rounded-2xl overflow-hidden shadow-2xl border border-slate-200">
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-                <div className="text-center space-y-4">
-                  <div className="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
-                    <Play className="h-10 w-10 text-white ml-1" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">Demo Video</h3>
-                    <p className="text-slate-600">Watch how SmartShot analyzes your shooting form</p>
-                  </div>
-                </div>
-              </div>
+              <iframe
+                width="100%"
+                height="100%"
+                src="https://www.youtube.com/embed/WuT95ks1Q_M"
+                title="SmartShot Basketball Analysis Demo"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="w-full h-full"
+              ></iframe>
             </div>
           </div>
         </section>
