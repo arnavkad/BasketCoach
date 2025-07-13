@@ -2,6 +2,7 @@
 
 import type { StatsData } from "@/types/stats"
 import { supabase } from "@/lib/supabase" // Import Supabase client
+import { revalidatePath } from "next/cache" // Import revalidatePath
 
 /**
  * Server Action to get the current statistics data for the logged-in user.
@@ -26,6 +27,10 @@ export async function getStatsData(): Promise<StatsData> {
     console.error("Error fetching stats data from Supabase:", error.message)
     throw new Error("Failed to load statistics from database.")
   }
+
+  // Revalidate the paths to ensure the latest data is shown on these pages
+  revalidatePath("/stats")
+  revalidatePath("/profile")
 
   if (data) {
     return data.stats_data as StatsData
@@ -63,7 +68,8 @@ export async function generateAndSaveMockData(): Promise<void> {
 
   const mockStats: StatsData = {
     monthlyStats: {
-      [currentMonthKey]: {
+      "2025-07": {
+        // Hardcoding July for consistent testing
         accuracy: Math.floor(Math.random() * (90 - 70 + 1)) + 70, // 70-90%
         shotsForSession: Math.floor(Math.random() * (70 - 40 + 1)) + 40, // 40-70 shots
         totalShots: Math.floor(Math.random() * (3000 - 2000 + 1)) + 2000, // 2000-3000 total
@@ -94,7 +100,31 @@ export async function generateAndSaveMockData(): Promise<void> {
           },
         ],
       },
-      // You can add more mock months here if needed
+      "2025-06": {
+        // Hardcoding June for consistent testing
+        accuracy: Math.floor(Math.random() * (85 - 65 + 1)) + 65,
+        shotsForSession: Math.floor(Math.random() * (60 - 35 + 1)) + 35,
+        totalShots: Math.floor(Math.random() * (2500 - 1800 + 1)) + 1800,
+        accuracyGraph: Array.from({ length: 7 }, () => Math.floor(Math.random() * (85 - 55 + 1)) + 55),
+        shotsForSessionGraph: Array.from({ length: 7 }, () => Math.floor(Math.random() * (50 - 25 + 1)) + 25),
+        totalShotsGraph: Array.from({ length: 7 }, () => Math.floor(Math.random() * (400 - 150 + 1)) + 150),
+        recentSessions: [
+          {
+            date: "2025-06-25",
+            shots: Math.floor(Math.random() * (60 - 40 + 1)) + 40,
+            duration: Math.floor(Math.random() * (30 - 20 + 1)) + 20,
+            accuracy: Math.floor(Math.random() * (80 - 65 + 1)) + 65,
+            consecutiveShots: Math.floor(Math.random() * (15 - 8 + 1)) + 8,
+          },
+          {
+            date: "2025-06-24",
+            shots: Math.floor(Math.random() * (50 - 30 + 1)) + 30,
+            duration: Math.floor(Math.random() * (25 - 15 + 1)) + 15,
+            accuracy: Math.floor(Math.random() * (75 - 60 + 1)) + 60,
+            consecutiveShots: Math.floor(Math.random() * (12 - 5 + 1)) + 5,
+          },
+        ],
+      },
     },
   }
 

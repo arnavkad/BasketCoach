@@ -1,12 +1,14 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { supabase } from "@/lib/supabase" // Import Supabase client
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { supabase } from "@/lib/supabase"
+import type { User } from "@supabase/supabase-js"
 
 interface AuthContextType {
   isLoggedIn: boolean
-  isLoading: boolean // Add isLoading state
-  login: () => void // These will be handled by Supabase internally
+  isLoading: boolean
+  user: User | null
+  login: () => void
   logout: () => void
 }
 
@@ -14,48 +16,62 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [isLoading, setIsLoading] = useState(true) // Initialize as true
+  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null)
 
+  // 1️⃣  Get the initial session on first render
+  useEffect(() => {
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (data.session) {
+          setIsLoggedIn(true)
+          setUser(data.session.user)
+        }
+      })
+      .finally(() => setIsLoading(false))
+  }, [])
+
+  // 2️⃣  Listen for future auth state changes
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        setIsLoggedIn(true)
-      } else {
-        setIsLoggedIn(false)
-      }
-      setIsLoading(false) // Set loading to false once auth state is determined
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(Boolean(session))
+      setUser(session?.user ?? null)
+      setIsLoading(false)
     })
 
-    return () => {
-      subscription?.unsubscribe()
-    }
+    return () => subscription.unsubscribe()
   }, [])
 
-  // These functions will trigger Supabase auth methods,
-  // and onAuthStateChanged will update the state accordingly.
-  const login = () => {
-    // This function is now a placeholder, actual login happens via Supabase signInWithPassword
-    // The onAuthStateChanged listener will update isLoggedIn
-  }
-
+  // 3️⃣  Updated logout
   const logout = async () => {
-    setIsLoading(true) // Set loading to true during logout process
+    if (!isLoggedIn) return // Nothing to do
+
+    setIsLoading(true)
     const { error } = await supabase.auth.signOut()
-    if (error) {
+
+    // Supabase returns “Auth session missing!” if the session is already gone.
+    if (error && error.message !== "Auth session missing!") {
       console.error("Error logging out:", error.message)
     }
-    // onAuthStateChanged will handle setting isLoggedIn to false and isLoading to false
+
+    // Regardless of Supabase response, immediately reset local auth state.
+    setIsLoggedIn(false)
+    setUser(null)
+    setIsLoading(false)
   }
 
-  return <AuthContext.Provider value={{ isLoggedIn, isLoading, login, logout }}>{children}</AuthContext.Provider>
+  const login = () => {
+    /* handled via <LoginPage /> */
+  }
+
+  return <AuthContext.Provider value={{ isLoggedIn, isLoading, user, login, logout }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider")
   return context
 }
